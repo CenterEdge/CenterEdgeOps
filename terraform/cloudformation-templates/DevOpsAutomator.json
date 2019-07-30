@@ -1,0 +1,2032 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Ops Automator, template version 1.1.2.34, (SO0029)",
+  "Parameters": {
+    "TagName": {
+      "Type": "String",
+      "Default": "OpsAutomatorTaskList",
+      "MinLength": 1,
+      "MaxLength": 127,
+      "Description": "Default name of tag that contains the list of tasks for a tagged resources."
+    },
+    "EnableTaskCleanup": {
+      "Type": "String",
+      "AllowedValues": [
+        "Yes",
+        "No"
+      ],
+      "Default": "Yes",
+      "Description": "Enable cleanup of task tracking table."
+    },
+    "RetainFailedTasks": {
+      "Type": "String",
+      "AllowedValues": [
+        "Yes",
+        "No"
+      ],
+      "Default": "Yes",
+      "Description": "Do not delete failed tasks."
+    },
+    "SendAnonymousData": {
+      "Type": "String",
+      "AllowedValues": [
+        "Yes",
+        "No"
+      ],
+      "Default": "Yes",
+      "Description": "Send Anonymous Metrics Data."
+    },
+    "TaskRetentionHours": {
+      "Type": "Number",
+      "MinValue": 1,
+      "Default": 168,
+      "Description": "Number of hours after which tasks are deleted.."
+    },
+    "LogRetentionDays": {
+      "Type": "Number",
+      "Default": 30,
+      "AllowedValues": [
+        1,
+        3,
+        5,
+        7,
+        14,
+        30,
+        60,
+        90,
+        120,
+        150,
+        180,
+        365,
+        400,
+        545,
+        731,
+        1827,
+        3653
+      ],
+      "Description": "Retention days for scheduler logs."
+    },
+    "LambdaSize": {
+      "Type": "Number",
+      "Description": "Lambda function size, increment size when processing large amounts of resources",
+      "Default": 128,
+      "AllowedValues": [
+        128,
+        192,
+        256,
+        320,
+        384,
+        448,
+        512,
+        576,
+        640,
+        704,
+        768,
+        832,
+        896,
+        960,
+        1024,
+        1088,
+        1152,
+        1216,
+        1280,
+        1344,
+        1408,
+        1472,
+        1536,
+        1600,
+        1664,
+        1728,
+        1792,
+        1856,
+        1920,
+        1984,
+        2048,
+        2112,
+        2176,
+        2240,
+        2304,
+        2368,
+        2432,
+        2496,
+        2560,
+        2624,
+        2688,
+        2752,
+        2816,
+        2880,
+        2944,
+        3008
+      ]
+    },
+    "ConfigBackupDays": {
+      "Type": "Number",
+      "Default": 30,
+      "MinValue": 1,
+      "Description": "Retention days for scheduler configuration backups."
+    },
+    "SchedulerActive": {
+      "Type": "String",
+      "AllowedValues": [
+        "Yes",
+        "No"
+      ],
+      "Default": "Yes",
+      "Description": "Activate or deactivate scheduling of task."
+    }
+  },
+  "Metadata": {
+    "AWS::CloudFormation::Interface": {
+      "ParameterGroups": [
+        {
+          "Label": {
+            "default": "Ops Automator (version 1.1.2.34)"
+          },
+          "Parameters": [
+            "TagName"
+          ]
+        },
+        {
+          "Label": {
+            "default": "Maintenance"
+          },
+          "Parameters": [
+            "EnableTaskCleanup",
+            "RetainFailedTasks",
+            "SchedulerActive",
+            "TaskRetentionHours",
+            "LambdaSize"
+          ]
+        }
+      ],
+      "ParameterLabels": {
+        "EnableTaskCleanup": {
+          "default": "Cleanup Task Tracking Table"
+        },
+        "RetainFailedTasks": {
+          "default": "Keep failed tasks"
+        },
+        "SchedulerActive": {
+          "default": "Scheduling active"
+        },
+        "TagName": {
+          "default": "Ops Automator Tagname"
+        },
+        "TaskRetentionHours": {
+          "default": "Hours to keep tasks"
+        },
+        "ConfigBackupDays": {
+          "default": "Days to keep configuration backups"
+        },
+        "LambdaSize": {
+          "default": "Lambda size (MB)"
+        },
+        "SendAnonymousData": {
+          "default": "Send anonymous usage data"
+        }
+      }
+    }
+  },
+  "Conditions": {
+    "EnableTaskCleanupCondition": {
+      "Fn::Equals": [
+        {
+          "Ref": "EnableTaskCleanup"
+        },
+        "Yes"
+      ]
+    },
+    "KeepFailedTasksCondition": {
+      "Fn::Equals": [
+        {
+          "Ref": "RetainFailedTasks"
+        },
+        "Yes"
+      ]
+    }
+  },
+  "Mappings": {
+    "EnabledDisabled": {
+      "Yes": {
+        "Value": "ENABLED"
+      },
+      "No": {
+        "Value": "DISABLED"
+      }
+    },
+    "YesNoBoolean": {
+      "Yes": {
+        "Value": "True"
+      },
+      "No": {
+        "Value": "False"
+      }
+    },
+    "Settings": {
+      "Metrics": {
+        "Url": "https://metrics.awssolutionsbuilder.com/generic",
+        "SolutionId": "S00029"
+      },
+      "Resources": {
+        "ResourceToS3SizeKB": 16
+      },
+      "DynamoDbTableCapacities": {
+        "TrackingTableMinRead": 5,
+        "TrackingTableMaxRead": 100,
+        "TrackingTableMinWrite": 5,
+        "TrackingTableMaxWrite": 100,
+        "TrackingTableCompletionMinRead": 5,
+        "TrackingTableCompletionMaxRead": 50,
+        "TrackingTableCompletionMinWrite": 5,
+        "TrackingTableCompletionMaxWrite": 50,
+        "TrackingTableExecutionMinRead": 2,
+        "TrackingTableExecutionMaxRead": 50,
+        "TrackingTableExecutionMinWrite": 2,
+        "TrackingTableExecutionMaxWrite": 50,
+        "ConcurrencyTableMinRead": 2,
+        "ConcurrencyTableMaxRead": 50,
+        "ConcurrencyTableMinWrite": 2,
+        "ConcurrencyTableMaxWrite": 50,
+        "ConfigurationTableMinRead": 2,
+        "ConfigurationTableMaxRead": 10,
+        "ConfigurationTableMinWrite": 1,
+        "ConfigurationTableMaxWrite": 5,
+        "LastExecutionRead": 1,
+        "LastExecutionWrite": 1
+      }
+    }
+  },
+  "Resources": {
+    "SchedulerRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "lambda.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole"
+            },
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "dynamodb.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole"
+            },
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "events.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        },
+        "Policies": [
+          {
+            "PolicyName": "SchedulerPolicy",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "logs:DescribeLogStreams",
+                    "logs:PutRetentionPolicy"
+                  ],
+                  "Resource": [
+                    "*"
+                  ]
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": "dynamodb:ListTables",
+                  "Resource": [
+                    "*"
+                  ]
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": "sns:Publish",
+                  "Resource": [
+                    {
+                      "Ref": "SchedulerSnsTopic"
+                    }
+                  ]
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "s3:PutObject",
+                    "s3:DeleteObject",
+                    "s3:GetObject"
+                  ],
+                  "Resource": {
+                    "Fn::Sub": [
+                      "arn:aws:s3:::${Name}/*",
+                      {
+                        "Name": {
+                          "Ref": "Configuration"
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "s3:PutObject",
+                    "s3:DeleteObject",
+                    "s3:GetObject"
+                  ],
+                  "Resource": {
+                    "Fn::Sub": [
+                      "arn:aws:s3:::${Name}/*",
+                      {
+                        "Name": {
+                          "Ref": "TaskResources"
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "s3:ListBucket"
+                  ],
+                  "Resource": [
+                    "*"
+                  ]
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "dynamodb:UpdateItem",
+                    "dynamodb:GetItem",
+                    "dynamodb:BatchWriteItem",
+                    "dynamodb:Query"
+                  ],
+                  "Resource": [
+                    {
+                      "Fn::Join": [
+                        "",
+                        [
+                          {
+                            "Fn::Join": [
+                              ":",
+                              [
+                                "arn:aws:dynamodb",
+                                {
+                                  "Ref": "AWS::Region"
+                                },
+                                {
+                                  "Ref": "AWS::AccountId"
+                                },
+                                "table/"
+                              ]
+                            ]
+                          },
+                          {
+                            "Ref": "TaskTrackingTable"
+                          }
+                        ]
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "dynamodb:UpdateItem",
+                    "dynamodb:GetItem",
+                    "dynamodb:BatchWriteItem",
+                    "dynamodb:Query"
+                  ],
+                  "Resource": [
+                    {
+                      "Fn::Join": [
+                        "",
+                        [
+                          {
+                            "Fn::Join": [
+                              ":",
+                              [
+                                "arn:aws:dynamodb",
+                                {
+                                  "Ref": "AWS::Region"
+                                },
+                                {
+                                  "Ref": "AWS::AccountId"
+                                },
+                                "table/"
+                              ]
+                            ]
+                          },
+                          {
+                            "Ref": "TaskTrackingTable"
+                          },
+                          "/index/*"
+                        ]
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "dynamodb:Query",
+                    "dynamodb:Scan",
+                    "dynamodb:GetItem",
+                    "dynamodb:PutItem",
+                    "dynamodb:DeleteItem"
+                  ],
+                  "Resource": [
+                    {
+                      "Fn::Join": [
+                        "",
+                        [
+                          {
+                            "Fn::Join": [
+                              ":",
+                              [
+                                "arn:aws:dynamodb",
+                                {
+                                  "Ref": "AWS::Region"
+                                },
+                                {
+                                  "Ref": "AWS::AccountId"
+                                },
+                                "table/"
+                              ]
+                            ]
+                          },
+                          {
+                            "Ref": "ConfigurationTable"
+                          }
+                        ]
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "Sid": "ConcurrencyTableAcces",
+                  "Effect": "Allow",
+                  "Action": [
+                    "dynamodb:UpdateItem",
+                    "dynamodb:DeleteItem"
+                  ],
+                  "Resource": [
+                    {
+                      "Fn::Join": [
+                        "",
+                        [
+                          {
+                            "Fn::Join": [
+                              ":",
+                              [
+                                "arn:aws:dynamodb",
+                                {
+                                  "Ref": "AWS::Region"
+                                },
+                                {
+                                  "Ref": "AWS::AccountId"
+                                },
+                                "table/"
+                              ]
+                            ]
+                          },
+                          {
+                            "Ref": "ConcurrencyTable"
+                          }
+                        ]
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "dynamodb:GetItem",
+                    "dynamodb:UpdateItem"
+                  ],
+                  "Resource": [
+                    {
+                      "Fn::Join": [
+                        "",
+                        [
+                          {
+                            "Fn::Join": [
+                              ":",
+                              [
+                                "arn:aws:dynamodb",
+                                {
+                                  "Ref": "AWS::Region"
+                                },
+                                {
+                                  "Ref": "AWS::AccountId"
+                                },
+                                "table/"
+                              ]
+                            ]
+                          },
+                          {
+                            "Ref": "LastSchedulerExecutionTable"
+                          }
+                        ]
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "events:EnableRule",
+                    "events:DisableRule",
+                    "events:PutRule"
+                  ],
+                  "Resource": [
+                    {
+                      "Fn::Sub": "arn:aws:events:${AWS::Region}:${AWS::AccountId}:rule/${AWS::StackName}-SchedulerRule*"
+                    },
+                    {
+                      "Fn::Sub": "arn:aws:events:${AWS::Region}:${AWS::AccountId}:rule/${AWS::StackName}-CompletionRule*"
+                    }
+                  ]
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "events:ListRules"
+                  ],
+                  "Resource": [
+                    "*"
+                  ]
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "cloudformation:ListStackResources"
+                  ],
+                  "Resource": [
+                    {
+                      "Ref": "AWS::StackId"
+                    }
+                  ]
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "cloudformation:DeleteStack"
+                  ],
+                  "Resource": [
+                    "*"
+                  ]
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "lambda:InvokeFunction"
+                  ],
+                  "Resource": [
+                    {
+                      "Fn::Join": [
+                        ":",
+                        [
+                          "arn:aws:lambda",
+                          {
+                            "Ref": "AWS::Region"
+                          },
+                          {
+                            "Ref": "AWS::AccountId"
+                          },
+                          "function",
+                          {
+                            "Fn::Join": [
+                              "-",
+                              [
+                                {
+                                  "Ref": "AWS::StackName"
+                                },
+                                "SchedulerDefault"
+                              ]
+                            ]
+                          }
+                        ]
+                      ]
+                    }
+                  ],
+                  "Sid": "SchedulerInvoke"
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "sts:AssumeRole"
+                  ],
+                  "Resource": [
+                    "*"
+                  ]
+                },
+                {
+                  "Action": [
+                    "ec2:CopySnapshot",
+                    "ec2:CreateTags"
+                  ],
+                  "Resource": "*",
+                  "Effect": "Allow",
+                  "Sid": "Ec2CopySnapshote9bd4a2e66554500817f7953f2602aa3"
+                },
+                {
+                  "Action": [
+                    "redshift:DescribeClusterSnapshots",
+                    "redshift:DeleteClusterSnapshot",
+                    "redshift:RevokeSnapshotAccess"
+                  ],
+                  "Resource": "*",
+                  "Effect": "Allow",
+                  "Sid": "RedshiftDeleteSnapshot6a6fb8cb41574ef2a85727dfcb4dae37"
+                },
+                {
+                  "Action": [
+                    "ec2:DescribeSnapshots",
+                    "ec2:DeleteSnapshot"
+                  ],
+                  "Resource": "*",
+                  "Effect": "Allow",
+                  "Sid": "Ec2DeleteSnapshot0fb0bd78c13147e5bfc89de7e79644ea"
+                },
+                {
+                  "Action": [
+                    "redshift:DescribeClusters",
+                    "redshift:CreateClusterSnapshot",
+                    "redshift:DescribeTags",
+                    "redshift:AuthorizeSnapshotAccess"
+                  ],
+                  "Resource": "*",
+                  "Effect": "Allow",
+                  "Sid": "RedshiftCreateSnapshot88ad775071d34b189b96b9e1b27ea28d"
+                },
+                {
+                  "Action": [
+                    "dynamodb:Scan",
+                    "dynamodb:BatchWriteItem"
+                  ],
+                  "Resource": "*",
+                  "Effect": "Allow",
+                  "Sid": "SchedulerTaskCleanup5a8f125d2f2b42bdaf10dd1f7afd501d"
+                },
+                {
+                  "Action": [
+                    "dynamodb:Scan",
+                    "s3:PutObject"
+                  ],
+                  "Resource": "*",
+                  "Effect": "Allow",
+                  "Sid": "SchedulerConfigBackup19f297df1fb44406bb23b9fcebe61edd"
+                },
+                {
+                  "Action": [
+                    "ec2:CreateSnapshot",
+                    "ec2:DescribeTags",
+                    "ec2:DescribeInstances",
+                    "ec2:DescribeSnapshots",
+                    "ec2:CreateTags"
+                  ],
+                  "Resource": "*",
+                  "Effect": "Allow",
+                  "Sid": "Ec2CreateSnapshotb6dba9f842864a2fb946eb423a1e111f"
+                },
+                {
+                  "Action": [
+                    "dynamodb:DescribeTable",
+                    "dynamodb:UpdateTable"
+                  ],
+                  "Resource": "*",
+                  "Effect": "Allow",
+                  "Sid": "DynamodbSetCapacity6abf7581ed8845e99b5887e10763e57b"
+                }
+              ]
+            }
+          }
+        ],
+        "ManagedPolicyArns": [
+          "arn:aws:iam::aws:policy/service-role/AWSLambdaDynamoDBExecutionRole",
+          "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+        ],
+        "Path": "/"
+      }
+    },
+    "OpsAutomatorScalingRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "application-autoscaling.amazonaws.com",
+                "AWS": {
+                  "Fn::GetAtt": [
+                    "SchedulerRole",
+                    "Arn"
+                  ]
+                }
+              },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        },
+        "Policies": [
+          {
+            "PolicyName": "OpsAutomatorScalingRolePolicy",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "dynamodb:DescribeTable",
+                    "dynamodb:UpdateTable",
+                    "cloudwatch:PutMetricAlarm",
+                    "cloudwatch:DescribeAlarms",
+                    "cloudwatch:GetMetricStatistics",
+                    "cloudwatch:SetAlarmState",
+                    "cloudwatch:DeleteAlarms"
+                  ],
+                  "Resource": "*"
+                }
+              ]
+            }
+          }
+        ],
+        "Path": "/"
+      },
+      "DependsOn": [
+        "SchedulerRule"
+      ]
+    },
+    "LastSchedulerExecutionTable": {
+      "Type": "AWS::DynamoDB::Table",
+      "Properties": {
+        "AttributeDefinitions": [
+          {
+            "AttributeName": "Name",
+            "AttributeType": "S"
+          }
+        ],
+        "KeySchema": [
+          {
+            "AttributeName": "Name",
+            "KeyType": "HASH"
+          }
+        ],
+        "ProvisionedThroughput": {
+          "ReadCapacityUnits": 1,
+          "WriteCapacityUnits": 1
+        }
+      }
+    },
+    "ConfigurationTable": {
+      "Type": "AWS::DynamoDB::Table",
+      "Properties": {
+        "AttributeDefinitions": [
+          {
+            "AttributeName": "Name",
+            "AttributeType": "S"
+          }
+        ],
+        "KeySchema": [
+          {
+            "AttributeName": "Name",
+            "KeyType": "HASH"
+          }
+        ],
+        "ProvisionedThroughput": {
+          "ReadCapacityUnits": 5,
+          "WriteCapacityUnits": 2
+        },
+        "StreamSpecification": {
+          "StreamViewType": "NEW_AND_OLD_IMAGES"
+        }
+      }
+    },
+    "ConfigurationTableAutoScalingReadTarget": {
+      "Type": "AWS::ApplicationAutoScaling::ScalableTarget",
+      "Properties": {
+        "MaxCapacity": {
+          "Fn::FindInMap": [
+            "Settings",
+            "DynamoDbTableCapacities",
+            "ConfigurationTableMaxRead"
+          ]
+        },
+        "MinCapacity": {
+          "Fn::FindInMap": [
+            "Settings",
+            "DynamoDbTableCapacities",
+            "ConfigurationTableMinRead"
+          ]
+        },
+        "ResourceId": {
+          "Fn::Join": [
+            "/",
+            [
+              "table",
+              {
+                "Ref": "ConfigurationTable"
+              }
+            ]
+          ]
+        },
+        "RoleARN": {
+          "Fn::GetAtt": [
+            "OpsAutomatorScalingRole",
+            "Arn"
+          ]
+        },
+        "ScalableDimension": "dynamodb:table:ReadCapacityUnits",
+        "ServiceNamespace": "dynamodb"
+      }
+    },
+    "ConfigurationTableAutoScalingReadPolicy": {
+      "Type": "AWS::ApplicationAutoScaling::ScalingPolicy",
+      "Properties": {
+        "PolicyName": {
+          "Fn::Join": [
+            "-",
+            [
+              {
+                "Ref": "AWS::StackName"
+              },
+              "ConfigurationTableAutoScalingReadPolicy"
+            ]
+          ]
+        },
+        "PolicyType": "TargetTrackingScaling",
+        "ScalingTargetId": {
+          "Ref": "ConfigurationTableAutoScalingReadTarget"
+        },
+        "TargetTrackingScalingPolicyConfiguration": {
+          "TargetValue": 75,
+          "ScaleInCooldown": 60,
+          "ScaleOutCooldown": 60,
+          "PredefinedMetricSpecification": {
+            "PredefinedMetricType": "DynamoDBReadCapacityUtilization"
+          }
+        }
+      }
+    },
+    "ConfigurationTableAutoScalingWriteTarget": {
+      "Type": "AWS::ApplicationAutoScaling::ScalableTarget",
+      "Properties": {
+        "MaxCapacity": {
+          "Fn::FindInMap": [
+            "Settings",
+            "DynamoDbTableCapacities",
+            "ConfigurationTableMaxWrite"
+          ]
+        },
+        "MinCapacity": {
+          "Fn::FindInMap": [
+            "Settings",
+            "DynamoDbTableCapacities",
+            "ConfigurationTableMinWrite"
+          ]
+        },
+        "ResourceId": {
+          "Fn::Join": [
+            "/",
+            [
+              "table",
+              {
+                "Ref": "ConfigurationTable"
+              }
+            ]
+          ]
+        },
+        "RoleARN": {
+          "Fn::GetAtt": [
+            "OpsAutomatorScalingRole",
+            "Arn"
+          ]
+        },
+        "ScalableDimension": "dynamodb:table:WriteCapacityUnits",
+        "ServiceNamespace": "dynamodb"
+      }
+    },
+    "ConfigurationTableAutoScalingWritePolicy": {
+      "Type": "AWS::ApplicationAutoScaling::ScalingPolicy",
+      "Properties": {
+        "PolicyName": {
+          "Fn::Join": [
+            "-",
+            [
+              {
+                "Ref": "AWS::StackName"
+              },
+              "ConfigurationTableAutoScalingWritePolicy"
+            ]
+          ]
+        },
+        "PolicyType": "TargetTrackingScaling",
+        "ScalingTargetId": {
+          "Ref": "ConfigurationTableAutoScalingWriteTarget"
+        },
+        "TargetTrackingScalingPolicyConfiguration": {
+          "TargetValue": 75,
+          "ScaleInCooldown": 60,
+          "ScaleOutCooldown": 60,
+          "PredefinedMetricSpecification": {
+            "PredefinedMetricType": "DynamoDBWriteCapacityUtilization"
+          }
+        }
+      },
+      "DependsOn": [
+        "ConfigurationTableAutoScalingReadPolicy"
+      ]
+    },
+    "TaskTrackingTable": {
+      "Type": "AWS::DynamoDB::Table",
+      "Properties": {
+        "AttributeDefinitions": [
+          {
+            "AttributeName": "Id",
+            "AttributeType": "S"
+          },
+          {
+            "AttributeName": "ConcurrencyId",
+            "AttributeType": "S"
+          },
+          {
+            "AttributeName": "LastCompletionCheck",
+            "AttributeType": "S"
+          }
+        ],
+        "KeySchema": [
+          {
+            "AttributeName": "Id",
+            "KeyType": "HASH"
+          }
+        ],
+        "ProvisionedThroughput": {
+          "ReadCapacityUnits": 10,
+          "WriteCapacityUnits": 10
+        },
+        "StreamSpecification": {
+          "StreamViewType": "NEW_AND_OLD_IMAGES"
+        },
+        "GlobalSecondaryIndexes": [
+          {
+            "IndexName": "WaitForExecutionTasks",
+            "KeySchema": [
+              {
+                "AttributeName": "ConcurrencyId",
+                "KeyType": "HASH"
+              },
+              {
+                "AttributeName": "Id",
+                "KeyType": "RANGE"
+              }
+            ],
+            "Projection": {
+              "ProjectionType": "ALL"
+            },
+            "ProvisionedThroughput": {
+              "ReadCapacityUnits": "2",
+              "WriteCapacityUnits": "2"
+            }
+          },
+          {
+            "IndexName": "WaitForCompletionTasks",
+            "KeySchema": [
+              {
+                "AttributeName": "Id",
+                "KeyType": "HASH"
+              },
+              {
+                "AttributeName": "LastCompletionCheck",
+                "KeyType": "RANGE"
+              }
+            ],
+            "Projection": {
+              "ProjectionType": "ALL"
+            },
+            "ProvisionedThroughput": {
+              "ReadCapacityUnits": "2",
+              "WriteCapacityUnits": "2"
+            }
+          }
+        ]
+      }
+    },
+    "TaskTrackingTableAutoScalingReadTarget": {
+      "Type": "AWS::ApplicationAutoScaling::ScalableTarget",
+      "Properties": {
+        "MaxCapacity": {
+          "Fn::FindInMap": [
+            "Settings",
+            "DynamoDbTableCapacities",
+            "TrackingTableMaxRead"
+          ]
+        },
+        "MinCapacity": {
+          "Fn::FindInMap": [
+            "Settings",
+            "DynamoDbTableCapacities",
+            "TrackingTableMinRead"
+          ]
+        },
+        "ResourceId": {
+          "Fn::Join": [
+            "/",
+            [
+              "table",
+              {
+                "Ref": "TaskTrackingTable"
+              }
+            ]
+          ]
+        },
+        "RoleARN": {
+          "Fn::GetAtt": [
+            "OpsAutomatorScalingRole",
+            "Arn"
+          ]
+        },
+        "ScalableDimension": "dynamodb:table:ReadCapacityUnits",
+        "ServiceNamespace": "dynamodb"
+      }
+    },
+    "TaskTrackingTableAutoScalingReadPolicy": {
+      "Type": "AWS::ApplicationAutoScaling::ScalingPolicy",
+      "Properties": {
+        "PolicyName": {
+          "Fn::Join": [
+            "-",
+            [
+              {
+                "Ref": "AWS::StackName"
+              },
+              "TaskTrackingTableAutoScalingReadPolicy"
+            ]
+          ]
+        },
+        "PolicyType": "TargetTrackingScaling",
+        "ScalingTargetId": {
+          "Ref": "TaskTrackingTableAutoScalingReadTarget"
+        },
+        "TargetTrackingScalingPolicyConfiguration": {
+          "TargetValue": 75,
+          "ScaleInCooldown": 60,
+          "ScaleOutCooldown": 60,
+          "PredefinedMetricSpecification": {
+            "PredefinedMetricType": "DynamoDBReadCapacityUtilization"
+          }
+        }
+      },
+      "DependsOn": [
+        "ConfigurationTableAutoScalingWritePolicy"
+      ]
+    },
+    "TaskTrackingTableAutoScalingWriteTarget": {
+      "Type": "AWS::ApplicationAutoScaling::ScalableTarget",
+      "Properties": {
+        "MaxCapacity": {
+          "Fn::FindInMap": [
+            "Settings",
+            "DynamoDbTableCapacities",
+            "TrackingTableMaxWrite"
+          ]
+        },
+        "MinCapacity": {
+          "Fn::FindInMap": [
+            "Settings",
+            "DynamoDbTableCapacities",
+            "TrackingTableMinWrite"
+          ]
+        },
+        "ResourceId": {
+          "Fn::Join": [
+            "/",
+            [
+              "table",
+              {
+                "Ref": "TaskTrackingTable"
+              }
+            ]
+          ]
+        },
+        "RoleARN": {
+          "Fn::GetAtt": [
+            "OpsAutomatorScalingRole",
+            "Arn"
+          ]
+        },
+        "ScalableDimension": "dynamodb:table:WriteCapacityUnits",
+        "ServiceNamespace": "dynamodb"
+      }
+    },
+    "TaskTrackingTableAutoScalingWritePolicy": {
+      "Type": "AWS::ApplicationAutoScaling::ScalingPolicy",
+      "Properties": {
+        "PolicyName": {
+          "Fn::Join": [
+            "-",
+            [
+              {
+                "Ref": "AWS::StackName"
+              },
+              "TaskTrackingTableAutoScalingWritePolicy"
+            ]
+          ]
+        },
+        "PolicyType": "TargetTrackingScaling",
+        "ScalingTargetId": {
+          "Ref": "TaskTrackingTableAutoScalingWriteTarget"
+        },
+        "TargetTrackingScalingPolicyConfiguration": {
+          "TargetValue": 75,
+          "ScaleInCooldown": 60,
+          "ScaleOutCooldown": 60,
+          "PredefinedMetricSpecification": {
+            "PredefinedMetricType": "DynamoDBWriteCapacityUtilization"
+          }
+        }
+      },
+      "DependsOn": [
+        "TaskTrackingTableAutoScalingReadPolicy"
+      ]
+    },
+    "TaskTrackingTableCompletionIndexReadTarget": {
+      "Type": "AWS::ApplicationAutoScaling::ScalableTarget",
+      "Properties": {
+        "MaxCapacity": {
+          "Fn::FindInMap": [
+            "Settings",
+            "DynamoDbTableCapacities",
+            "TrackingTableCompletionMaxRead"
+          ]
+        },
+        "MinCapacity": {
+          "Fn::FindInMap": [
+            "Settings",
+            "DynamoDbTableCapacities",
+            "TrackingTableCompletionMinRead"
+          ]
+        },
+        "ResourceId": {
+          "Fn::Join": [
+            "/",
+            [
+              "table",
+              {
+                "Ref": "TaskTrackingTable"
+              },
+              "index",
+              "WaitForCompletionTasks"
+            ]
+          ]
+        },
+        "RoleARN": {
+          "Fn::GetAtt": [
+            "OpsAutomatorScalingRole",
+            "Arn"
+          ]
+        },
+        "ScalableDimension": "dynamodb:index:ReadCapacityUnits",
+        "ServiceNamespace": "dynamodb"
+      }
+    },
+    "TaskTrackingTableCompletionIndexReadPolicy": {
+      "Type": "AWS::ApplicationAutoScaling::ScalingPolicy",
+      "Properties": {
+        "PolicyName": {
+          "Fn::Join": [
+            "-",
+            [
+              {
+                "Ref": "AWS::StackName"
+              },
+              "TaskTrackingTableCompletionIndexReadPolicy"
+            ]
+          ]
+        },
+        "PolicyType": "TargetTrackingScaling",
+        "ScalingTargetId": {
+          "Ref": "TaskTrackingTableCompletionIndexReadTarget"
+        },
+        "TargetTrackingScalingPolicyConfiguration": {
+          "TargetValue": 75,
+          "ScaleInCooldown": 60,
+          "ScaleOutCooldown": 60,
+          "PredefinedMetricSpecification": {
+            "PredefinedMetricType": "DynamoDBReadCapacityUtilization"
+          }
+        }
+      },
+      "DependsOn": [
+        "TaskTrackingTableAutoScalingWritePolicy"
+      ]
+    },
+    "TaskTrackingTableCompletionIndexWriteTarget": {
+      "Type": "AWS::ApplicationAutoScaling::ScalableTarget",
+      "Properties": {
+        "MaxCapacity": {
+          "Fn::FindInMap": [
+            "Settings",
+            "DynamoDbTableCapacities",
+            "TrackingTableCompletionMaxWrite"
+          ]
+        },
+        "MinCapacity": {
+          "Fn::FindInMap": [
+            "Settings",
+            "DynamoDbTableCapacities",
+            "TrackingTableCompletionMinWrite"
+          ]
+        },
+        "ResourceId": {
+          "Fn::Join": [
+            "/",
+            [
+              "table",
+              {
+                "Ref": "TaskTrackingTable"
+              },
+              "index",
+              "WaitForCompletionTasks"
+            ]
+          ]
+        },
+        "RoleARN": {
+          "Fn::GetAtt": [
+            "OpsAutomatorScalingRole",
+            "Arn"
+          ]
+        },
+        "ScalableDimension": "dynamodb:index:WriteCapacityUnits",
+        "ServiceNamespace": "dynamodb"
+      }
+    },
+    "TaskTrackingTableCompletionIndexWritePolicy": {
+      "Type": "AWS::ApplicationAutoScaling::ScalingPolicy",
+      "Properties": {
+        "PolicyName": {
+          "Fn::Join": [
+            "-",
+            [
+              {
+                "Ref": "AWS::StackName"
+              },
+              "TaskTrackingTableCompletionIndexWritePolicy"
+            ]
+          ]
+        },
+        "PolicyType": "TargetTrackingScaling",
+        "ScalingTargetId": {
+          "Ref": "TaskTrackingTableCompletionIndexWriteTarget"
+        },
+        "TargetTrackingScalingPolicyConfiguration": {
+          "TargetValue": 75,
+          "ScaleInCooldown": 60,
+          "ScaleOutCooldown": 60,
+          "PredefinedMetricSpecification": {
+            "PredefinedMetricType": "DynamoDBWriteCapacityUtilization"
+          }
+        }
+      },
+      "DependsOn": [
+        "TaskTrackingTableCompletionIndexReadPolicy"
+      ]
+    },
+    "TaskTrackingTableExecutionIndexReadTarget": {
+      "Type": "AWS::ApplicationAutoScaling::ScalableTarget",
+      "Properties": {
+        "MaxCapacity": {
+          "Fn::FindInMap": [
+            "Settings",
+            "DynamoDbTableCapacities",
+            "TrackingTableExecutionMaxRead"
+          ]
+        },
+        "MinCapacity": {
+          "Fn::FindInMap": [
+            "Settings",
+            "DynamoDbTableCapacities",
+            "TrackingTableExecutionMinRead"
+          ]
+        },
+        "ResourceId": {
+          "Fn::Join": [
+            "/",
+            [
+              "table",
+              {
+                "Ref": "TaskTrackingTable"
+              },
+              "index",
+              "WaitForExecutionTasks"
+            ]
+          ]
+        },
+        "RoleARN": {
+          "Fn::GetAtt": [
+            "OpsAutomatorScalingRole",
+            "Arn"
+          ]
+        },
+        "ScalableDimension": "dynamodb:index:ReadCapacityUnits",
+        "ServiceNamespace": "dynamodb"
+      }
+    },
+    "TaskTrackingTableExecutionIndexReadPolicy": {
+      "Type": "AWS::ApplicationAutoScaling::ScalingPolicy",
+      "Properties": {
+        "PolicyName": {
+          "Fn::Join": [
+            "-",
+            [
+              {
+                "Ref": "AWS::StackName"
+              },
+              "TaskTrackingTableExecutionIndexReadPolicy"
+            ]
+          ]
+        },
+        "PolicyType": "TargetTrackingScaling",
+        "ScalingTargetId": {
+          "Ref": "TaskTrackingTableExecutionIndexReadTarget"
+        },
+        "TargetTrackingScalingPolicyConfiguration": {
+          "TargetValue": 75,
+          "ScaleInCooldown": 60,
+          "ScaleOutCooldown": 60,
+          "PredefinedMetricSpecification": {
+            "PredefinedMetricType": "DynamoDBReadCapacityUtilization"
+          }
+        }
+      },
+      "DependsOn": [
+        "TaskTrackingTableCompletionIndexWritePolicy"
+      ]
+    },
+    "TaskTrackingTableExecutionIndexWriteTarget": {
+      "Type": "AWS::ApplicationAutoScaling::ScalableTarget",
+      "Properties": {
+        "MaxCapacity": {
+          "Fn::FindInMap": [
+            "Settings",
+            "DynamoDbTableCapacities",
+            "TrackingTableExecutionMaxWrite"
+          ]
+        },
+        "MinCapacity": {
+          "Fn::FindInMap": [
+            "Settings",
+            "DynamoDbTableCapacities",
+            "TrackingTableExecutionMinWrite"
+          ]
+        },
+        "ResourceId": {
+          "Fn::Join": [
+            "/",
+            [
+              "table",
+              {
+                "Ref": "TaskTrackingTable"
+              },
+              "index",
+              "WaitForExecutionTasks"
+            ]
+          ]
+        },
+        "RoleARN": {
+          "Fn::GetAtt": [
+            "OpsAutomatorScalingRole",
+            "Arn"
+          ]
+        },
+        "ScalableDimension": "dynamodb:index:WriteCapacityUnits",
+        "ServiceNamespace": "dynamodb"
+      }
+    },
+    "TaskTrackingTableExecutionIndexWritePolicy": {
+      "Type": "AWS::ApplicationAutoScaling::ScalingPolicy",
+      "Properties": {
+        "PolicyName": {
+          "Fn::Join": [
+            "-",
+            [
+              {
+                "Ref": "AWS::StackName"
+              },
+              "TaskTrackingTableExecutionIndexWritePolicy"
+            ]
+          ]
+        },
+        "PolicyType": "TargetTrackingScaling",
+        "ScalingTargetId": {
+          "Ref": "TaskTrackingTableExecutionIndexWriteTarget"
+        },
+        "TargetTrackingScalingPolicyConfiguration": {
+          "TargetValue": 75,
+          "ScaleInCooldown": 60,
+          "ScaleOutCooldown": 60,
+          "PredefinedMetricSpecification": {
+            "PredefinedMetricType": "DynamoDBWriteCapacityUtilization"
+          }
+        }
+      },
+      "DependsOn": [
+        "TaskTrackingTableExecutionIndexReadPolicy"
+      ]
+    },
+    "ConcurrencyTable": {
+      "Type": "AWS::DynamoDB::Table",
+      "Properties": {
+        "AttributeDefinitions": [
+          {
+            "AttributeName": "ConcurrencyId",
+            "AttributeType": "S"
+          }
+        ],
+        "KeySchema": [
+          {
+            "AttributeName": "ConcurrencyId",
+            "KeyType": "HASH"
+          }
+        ],
+        "ProvisionedThroughput": {
+          "ReadCapacityUnits": 2,
+          "WriteCapacityUnits": 2
+        }
+      }
+    },
+    "ConcurrencyTableAutoScalingReadTarget": {
+      "Type": "AWS::ApplicationAutoScaling::ScalableTarget",
+      "Properties": {
+        "MaxCapacity": {
+          "Fn::FindInMap": [
+            "Settings",
+            "DynamoDbTableCapacities",
+            "ConcurrencyTableMaxRead"
+          ]
+        },
+        "MinCapacity": {
+          "Fn::FindInMap": [
+            "Settings",
+            "DynamoDbTableCapacities",
+            "ConcurrencyTableMinRead"
+          ]
+        },
+        "ResourceId": {
+          "Fn::Join": [
+            "/",
+            [
+              "table",
+              {
+                "Ref": "ConcurrencyTable"
+              }
+            ]
+          ]
+        },
+        "RoleARN": {
+          "Fn::GetAtt": [
+            "OpsAutomatorScalingRole",
+            "Arn"
+          ]
+        },
+        "ScalableDimension": "dynamodb:table:ReadCapacityUnits",
+        "ServiceNamespace": "dynamodb"
+      }
+    },
+    "ConcurrencyTableAutoScalingReadPolicy": {
+      "Type": "AWS::ApplicationAutoScaling::ScalingPolicy",
+      "Properties": {
+        "PolicyName": {
+          "Fn::Join": [
+            "-",
+            [
+              {
+                "Ref": "AWS::StackName"
+              },
+              "ConcurrencyTableAutoScalingReadPolicy"
+            ]
+          ]
+        },
+        "PolicyType": "TargetTrackingScaling",
+        "ScalingTargetId": {
+          "Ref": "ConcurrencyTableAutoScalingReadTarget"
+        },
+        "TargetTrackingScalingPolicyConfiguration": {
+          "TargetValue": 75,
+          "ScaleInCooldown": 60,
+          "ScaleOutCooldown": 60,
+          "PredefinedMetricSpecification": {
+            "PredefinedMetricType": "DynamoDBReadCapacityUtilization"
+          }
+        }
+      },
+      "DependsOn": [
+        "TaskTrackingTableExecutionIndexWritePolicy"
+      ]
+    },
+    "ConcurrencyTableAutoScalingWriteTarget": {
+      "Type": "AWS::ApplicationAutoScaling::ScalableTarget",
+      "Properties": {
+        "MaxCapacity": {
+          "Fn::FindInMap": [
+            "Settings",
+            "DynamoDbTableCapacities",
+            "ConcurrencyTableMaxWrite"
+          ]
+        },
+        "MinCapacity": {
+          "Fn::FindInMap": [
+            "Settings",
+            "DynamoDbTableCapacities",
+            "ConcurrencyTableMinWrite"
+          ]
+        },
+        "ResourceId": {
+          "Fn::Join": [
+            "/",
+            [
+              "table",
+              {
+                "Ref": "ConcurrencyTable"
+              }
+            ]
+          ]
+        },
+        "RoleARN": {
+          "Fn::GetAtt": [
+            "OpsAutomatorScalingRole",
+            "Arn"
+          ]
+        },
+        "ScalableDimension": "dynamodb:table:WriteCapacityUnits",
+        "ServiceNamespace": "dynamodb"
+      }
+    },
+    "ConcurrencyTableAutoScalingWritePolicy": {
+      "Type": "AWS::ApplicationAutoScaling::ScalingPolicy",
+      "Properties": {
+        "PolicyName": {
+          "Fn::Join": [
+            "-",
+            [
+              {
+                "Ref": "AWS::StackName"
+              },
+              "ConcurrencyTableAutoScalingWritePolicy"
+            ]
+          ]
+        },
+        "PolicyType": "TargetTrackingScaling",
+        "ScalingTargetId": {
+          "Ref": "ConcurrencyTableAutoScalingWriteTarget"
+        },
+        "TargetTrackingScalingPolicyConfiguration": {
+          "TargetValue": 75,
+          "ScaleInCooldown": 60,
+          "ScaleOutCooldown": 60,
+          "PredefinedMetricSpecification": {
+            "PredefinedMetricType": "DynamoDBWriteCapacityUtilization"
+          }
+        }
+      },
+      "DependsOn": [
+        "ConcurrencyTableAutoScalingReadPolicy"
+      ]
+    },
+    "SchedulerLogGroup": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "LogGroupName": {
+          "Fn::Join": [
+            "-",
+            [
+              {
+                "Ref": "AWS::StackName"
+              },
+              "logs"
+            ]
+          ]
+        },
+        "RetentionInDays": {
+          "Ref": "LogRetentionDays"
+        }
+      }
+    },
+    "SchedulerSnsTopic": {
+      "Type": "AWS::SNS::Topic",
+      "Properties": {
+        "DisplayName": {
+          "Ref": "AWS::StackName"
+        }
+      }
+    },
+    "SchedulerDefault": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Fn::Join": [
+              "-",
+              [
+                "solutions",
+                {
+                  "Ref": "AWS::Region"
+                }
+              ]
+            ]
+          },
+          "S3Key": "ops-automator/latest/ops-automator-1.1.2.34.zip"
+        },
+        "FunctionName": {
+          "Fn::Join": [
+            "-",
+            [
+              {
+                "Ref": "AWS::StackName"
+              },
+              "SchedulerDefault"
+            ]
+          ]
+        },
+        "Handler": "main.lambda_handler",
+        "Runtime": "python2.7",
+        "Role": {
+          "Fn::GetAtt": [
+            "SchedulerRole",
+            "Arn"
+          ]
+        },
+        "Environment": {
+          "Variables": {
+            "LAST_SCHEDULER_RUN_TABLE": {
+              "Ref": "LastSchedulerExecutionTable"
+            },
+            "RESOURCE_BUCKET": {
+              "Ref": "TaskResources"
+            },
+            "RESOURCE_TO_S3_SIZE": {
+              "Fn::FindInMap": [
+                "Settings",
+                "Resources",
+                "ResourceToS3SizeKB"
+              ]
+            },
+            "ACTION_TRACKING_TABLE": {
+              "Ref": "TaskTrackingTable"
+            },
+            "CONFIG_TABLE": {
+              "Ref": "ConfigurationTable"
+            },
+            "CONFIG_BUCKET": {
+              "Ref": "Configuration"
+            },
+            "CONCURRENCY_TABLE": {
+              "Ref": "ConcurrencyTable"
+            },
+            "SCHEDULER_TAG_NAME": {
+              "Ref": "TagName"
+            },
+            "LOG_GROUP": {
+              "Ref": "SchedulerLogGroup"
+            },
+            "STACK_NAME": {
+              "Ref": "AWS::StackName"
+            },
+            "STACK_ID": {
+              "Ref": "AWS::StackId"
+            },
+            "SNS_TOPIC": {
+              "Ref": "SchedulerSnsTopic"
+            },
+            "SEND_METRICS": {
+              "Fn::FindInMap": [
+                "YesNoBoolean",
+                {
+                  "Ref": "SendAnonymousData"
+                },
+                "Value"
+              ]
+            },
+            "SOLUTION_ID": {
+              "Fn::FindInMap": [
+                "Settings",
+                "Metrics",
+                "SolutionId"
+              ]
+            },
+            "METRICS_URL": {
+              "Fn::FindInMap": [
+                "Settings",
+                "Metrics",
+                "Url"
+              ]
+            }
+          }
+        },
+        "MemorySize": {
+          "Ref": "LambdaSize"
+        },
+        "Timeout": "300",
+        "Description": "Task scheduler (default), version 1.1.2.34"
+      },
+      "DependsOn": [
+        "SchedulerRole"
+      ]
+    },
+    "TaskResources": {
+      "Type": "AWS::S3::Bucket",
+      "DeletionPolicy": "Retain"
+    },
+    "OpsAutomatorInvokePermissionDynamodb": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "SchedulerDefault",
+            "Arn"
+          ]
+        },
+        "Action": "lambda:InvokeFunction",
+        "Principal": "dynamodb.amazonaws.com"
+      }
+    },
+    "Configuration": {
+      "Type": "AWS::S3::Bucket",
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "LifecycleConfiguration": {
+          "Rules": [
+            {
+              "ExpirationInDays": {
+                "Ref": "ConfigBackupDays"
+              },
+              "Prefix": "Backups/",
+              "Status": "Enabled"
+            }
+          ]
+        }
+      }
+    },
+    "SchedulerInvokePermissionDynamodb": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "SchedulerDefault",
+            "Arn"
+          ]
+        },
+        "Action": "lambda:InvokeFunction",
+        "Principal": "dynamodb.amazonaws.com"
+      }
+    },
+    "InvokePermissionCloudWatchEvents": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "SchedulerDefault",
+            "Arn"
+          ]
+        },
+        "Action": "lambda:InvokeFunction",
+        "Principal": "events.amazonaws.com",
+        "SourceArn": {
+          "Fn::GetAtt": [
+            "SchedulerRule",
+            "Arn"
+          ]
+        }
+      }
+    },
+    "InvokePermissionCloudWatchEventsCompletion": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "SchedulerDefault",
+            "Arn"
+          ]
+        },
+        "Action": "lambda:InvokeFunction",
+        "Principal": "events.amazonaws.com",
+        "SourceArn": {
+          "Fn::GetAtt": [
+            "CompletionRule",
+            "Arn"
+          ]
+        }
+      }
+    },
+    "SchedulerCleanupTask": {
+      "Type": "Custom::TaskConfig",
+      "Properties": {
+        "ServiceToken": {
+          "Fn::GetAtt": [
+            "SchedulerDefault",
+            "Arn"
+          ]
+        },
+        "Timeout": "120",
+        "Name": "TaskTableCleanup",
+        "Description": "Internal task for cleaning task tracking table, do not delete",
+        "Parameters": {
+          "TaskRetentionHours": {
+            "Ref": "TaskRetentionHours"
+          },
+          "RetainFailedTasks": {
+            "Fn::If": [
+              "KeepFailedTasksCondition",
+              "True",
+              "False"
+            ]
+          }
+        },
+        "Interval": "59 0/4 * * ?",
+        "Internal": "True",
+        "Action": "SchedulerTaskCleanup",
+        "Enabled": {
+          "Fn::If": [
+            "EnableTaskCleanupCondition",
+            "True",
+            "False"
+          ]
+        },
+        "StackId": {
+          "Ref": "AWS::StackId"
+        }
+      }
+    },
+    "SchedulerBackupTask": {
+      "Type": "Custom::TaskConfig",
+      "Properties": {
+        "ServiceToken": {
+          "Fn::GetAtt": [
+            "SchedulerDefault",
+            "Arn"
+          ]
+        },
+        "Timeout": "120",
+        "Name": "TaskConfigurationBackup",
+        "Description": "Internal task for daily backup of configuration table, do not delete",
+        "Parameters": {
+          "S3Bucket": {
+            "Ref": "Configuration"
+          },
+          "S3Prefix": "Backups/"
+        },
+        "Interval": "0 0 * * ?",
+        "Internal": "True",
+        "Action": "SchedulerConfigBackup",
+        "Enabled": "True",
+        "StackId": {
+          "Ref": "AWS::StackId"
+        }
+      }
+    },
+    "SchedulerSetupHelper": {
+      "Type": "Custom::SchedulerSetupHelper",
+      "Properties": {
+        "ServiceToken": {
+          "Fn::GetAtt": [
+            "SchedulerDefault",
+            "Arn"
+          ]
+        },
+        "Timeout": "150",
+        "LogRetentionDays": {
+          "Ref": "LogRetentionDays"
+        },
+        "StackVersion": "1.1.2.34",
+        "SchedulerRole": {
+          "Fn::GetAtt": [
+            "SchedulerRole",
+            "Arn"
+          ]
+        },
+        "DeploymentVersion": "1.1.2.34"
+      },
+      "DependsOn": [
+        "ConfigurationTable"
+      ]
+    },
+    "SchedulerRule": {
+      "Type": "AWS::Events::Rule",
+      "Properties": {
+        "Description": "Rule to trigger instance for task scheduler",
+        "ScheduleExpression": "cron(0/1 * * * ? *)",
+        "State": {
+          "Fn::FindInMap": [
+            "EnabledDisabled",
+            {
+              "Ref": "SchedulerActive"
+            },
+            "Value"
+          ]
+        },
+        "Targets": [
+          {
+            "Id": "TaskScheduler",
+            "Arn": {
+              "Fn::GetAtt": [
+                "SchedulerDefault",
+                "Arn"
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "CompletionRule": {
+      "Type": "AWS::Events::Rule",
+      "Properties": {
+        "Description": "Rule to trigger instance for scheduler task completion check",
+        "ScheduleExpression": "cron(0/1 * * * ? *)",
+        "State": "ENABLED",
+        "Targets": [
+          {
+            "Id": "TaskScheduler",
+            "Arn": {
+              "Fn::GetAtt": [
+                "SchedulerDefault",
+                "Arn"
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "ActionEventMappingTaskTracking": {
+      "Type": "AWS::Lambda::EventSourceMapping",
+      "Properties": {
+        "BatchSize": 20,
+        "Enabled": true,
+        "EventSourceArn": {
+          "Fn::GetAtt": [
+            "TaskTrackingTable",
+            "StreamArn"
+          ]
+        },
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "SchedulerDefault",
+            "Arn"
+          ]
+        },
+        "StartingPosition": "TRIM_HORIZON"
+      }
+    },
+    "ActionEventMappingConfiguration": {
+      "Type": "AWS::Lambda::EventSourceMapping",
+      "Properties": {
+        "BatchSize": 1,
+        "Enabled": true,
+        "EventSourceArn": {
+          "Fn::GetAtt": [
+            "ConfigurationTable",
+            "StreamArn"
+          ]
+        },
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "SchedulerDefault",
+            "Arn"
+          ]
+        },
+        "StartingPosition": "TRIM_HORIZON"
+      }
+    }
+  },
+  "Outputs": {
+    "LogGroup": {
+      "Value": {
+        "Ref": "SchedulerLogGroup"
+      },
+      "Description": "Name of the CloudWatch loggroup for the scheduler"
+    },
+    "ConfigurationBucketName": {
+      "Value": {
+        "Ref": "Configuration"
+      },
+      "Description": "Name of bucket with generated CloufFormation templates for managing tasks and creating cross account roles and backups"
+    },
+    "IssueSNSTopic": {
+      "Value": {
+        "Ref": "SchedulerSnsTopic"
+      },
+      "Description": "Topic to subribe to for notifications of errors and warnings"
+    }
+  }
+}
