@@ -5,7 +5,7 @@ provider "aws" {
     role_arn = "arn:aws:iam::833738481970:role/Deployer"
   }
 
-  version = "~> 2.0"
+  version = "~> 2.52"
 }
 
 provider "local" {
