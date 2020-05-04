@@ -9,7 +9,7 @@ resource "aws_instance" "SupportOps" {
   ami                         = "ami-0204606704df03e7e"
   availability_zone           = "us-east-1b"
   ebs_optimized               = true
-  instance_type               = "c5.xlarge"
+  instance_type               = "t3a.large"
   monitoring                  = false
   key_name                    = "CenterEdgeOps"
   subnet_id                   = "${local.SupportOps["subnet_id"]}"
