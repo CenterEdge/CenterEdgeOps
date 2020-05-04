@@ -1,5 +1,6 @@
 locals {
-  default_tags {
-    Terraform   = "true"
+  default_tags = {
+    Terraform = "true"
   }
 }
+

@@ -1,6 +1,6 @@
 # State
 terraform {
-  required_version="0.11.14"
+  required_version = "0.12.23"
 
   backend "s3" {
     region         = "us-east-1"
@@ -15,7 +15,7 @@ terraform {
 # Remote State
 data "terraform_remote_state" "opsroot" {
   backend = "s3"
-  config {
+  config = {
     region         = "us-east-1"
     bucket         = "centeredgeterraform"
     key            = "OpsRoot/terraform.tfstate"
@@ -26,4 +26,6 @@ data "terraform_remote_state" "opsroot" {
 }
 
 # Identity running terraform
-data "aws_caller_identity" "current" {}
+data "aws_caller_identity" "current" {
+}
+
