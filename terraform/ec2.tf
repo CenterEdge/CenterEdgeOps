@@ -1,6 +1,6 @@
 locals {
-  SupportOps {
-    subnet_id       = "subnet-912380ba"
+  SupportOps = {
+    subnet_id        = "subnet-912380ba"
     instance_profile = "SupportBot"
   }
 }
@@ -12,25 +12,26 @@ resource "aws_instance" "SupportOps" {
   instance_type               = "t3a.large"
   monitoring                  = false
   key_name                    = "CenterEdgeOps"
-  subnet_id                   = "${local.SupportOps["subnet_id"]}"
+  subnet_id                   = local.SupportOps["subnet_id"]
   vpc_security_group_ids      = ["sg-09f54559649a9d490"]
   associate_public_ip_address = true
   private_ip                  = "172.16.0.248"
   source_dest_check           = true
-  iam_instance_profile         = "${local.SupportOps["instance_profile"]}"
+  iam_instance_profile        = local.SupportOps["instance_profile"]
   disable_api_termination     = "true"
 
   root_block_device {
-      volume_type           = "gp2"
-      volume_size           = 100
-      delete_on_termination = true
+    volume_type           = "gp2"
+    volume_size           = 100
+    delete_on_termination = true
   }
 
-  tags = "${merge(
+  tags = merge(
     local.default_tags,
-    map(
-      "Name",               "SupportOps",
-      "BillingEnvironment", "Ops"
-    )
-  )}"
+    {
+      "Name"               = "SupportOps"
+      "BillingEnvironment" = "Ops"
+    },
+  )
 }
+
