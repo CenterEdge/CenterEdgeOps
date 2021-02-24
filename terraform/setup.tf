@@ -1,6 +1,17 @@
 # State
 terraform {
-  required_version = "~>0.13.1"
+  required_version = "~> 0.14.7"
+
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 2.52"
+    }
+    local = {
+      source  = "hashicorp/local"
+      version = "~> 1.3"
+    }
+  }
 
   backend "s3" {
     region         = "us-east-1"
@@ -25,7 +36,16 @@ data "terraform_remote_state" "opsroot" {
   }
 }
 
-# Identity running terraform
 data "aws_caller_identity" "current" {
 }
 
+provider "aws" {
+  region = "us-east-1"
+
+  assume_role {
+    role_arn = "arn:aws:iam::833738481970:role/Deployer"
+  }
+}
+
+provider "local" {
+}
