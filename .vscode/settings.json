@@ -1,0 +1,11 @@
+{
+    "terraform-ls.rootModules": [
+        "terraform"
+    ],
+    "[terraform]": {
+        "editor.formatOnSave": true
+    },
+    "terraform-ls.experimentalFeatures": {
+        "validateOnSave": true
+    }
+}
