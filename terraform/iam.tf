@@ -4,23 +4,27 @@ resource "aws_iam_user" "BackupUploader" {
   force_destroy = "false"
 }
 
+resource "aws_iam_role" "backupadmin" {
+    name               = "BackupAdmin"
+    path               = "/"
+    assume_role_policy = data.aws_iam_policy_document.backupadmin-assumepolicy.json
+}
+
 data "aws_iam_policy_document" "backupadmin" {
   statement {
-    sid       = "ListBucketsNeededForAWSConsole"
+    sid       = "NeedForAWSConsole"
     actions   = ["s3:ListAllMyBuckets"]
-    resources = [
-      "*"
-    ]
+    resources = ["arn:aws:s3:::*"]
   }
 
   statement {
-    sid       = "AllowBucketRead"
+    sid       = "BucketRead"
     actions   = ["s3:ListBucket", "s3:GetBucketLocation"]
     resources = ["arn:aws:s3:::centeredge-db-backup"]
   }
 
   statement {
-    sid     = "AllowBucketObjectsAllActions"
+    sid     = "BucketObjAllActions"
     actions = [
       "s3:PutObject",
       "s3:PutObjectAcl",
@@ -28,11 +32,11 @@ data "aws_iam_policy_document" "backupadmin" {
       "s3:GetObjectAcl",
       "s3:DeleteObject"
     ]
-    resources = ["arn:aws:s3:::centeredge-db-backup"]
+    resources = ["arn:aws:s3:::centeredge-db-backup/*"]
   }
 }
-# arn:aws:iam::833738481970:policy/BackupAdmin
-resource "aws_iam_policy" "BackupAdmin" {
+
+resource "aws_iam_policy" "backupadmin" {
     name        = "BackupAdmin"
     path        = "/"
     description = "Allows readwrite to everything in centeredge-db-backup bucket"
@@ -62,8 +66,7 @@ data "aws_iam_policy_document" "backupadmin-assumepolicy" {
   }
 }
 
-resource "aws_iam_role" "BackupAdmin" {
-    name               = "BackupAdmin"
-    path               = "/"
-    assume_role_policy = data.aws_iam_policy_document.backupadmin-assumepolicy.json
+resource "aws_iam_role_policy_attachment" "backupadmin" {
+  role       = aws_iam_role.backupadmin.name
+  policy_arn = aws_iam_policy.backupadmin.arn
 }
