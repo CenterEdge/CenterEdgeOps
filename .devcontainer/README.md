@@ -1,6 +1,6 @@
 # Devcontainer
 
-_NOTE: This is almost a verbatim copy of `IAC.Monitors` version of the `.devcontainer` dir, should still be moved and built out globally, just referencing here as there are multiple versionso of the devcontainer out in other projects at this point :/_
+_NOTE: This is almost a verbatim copy of `IAC.Monitors` version of the `.devcontainer` dir, should still be moved and built out globally, just referencing here as there are multiple versions of the devcontainer out in other projects at this point :/_
 
 _NOTE: For the devcontainer to startup and mount various host config files into the container for aws auth, git config, etc... You **must have the HOME environment variable setup in your HOST environment**_
 
