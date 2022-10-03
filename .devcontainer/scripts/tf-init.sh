@@ -2,7 +2,7 @@
 set -euo pipefail
 
 _envrootdirs=(
-    '.'
+    './terraform'
 )
 
 
