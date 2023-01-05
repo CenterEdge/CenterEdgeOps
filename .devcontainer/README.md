@@ -9,7 +9,7 @@ Devcontainer uses [awsume](https://awsu.me/) to assume roles. The container maps
 awsume centeredge
 
 # Run terraform
-cd envs/centeredgecloudprod
+cd terraform
 terraform init
 terraform (plan|apply)
 ```
