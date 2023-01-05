@@ -11,3 +11,4 @@ USER vscode
 RUN awsume-configure --shell=bash --alias-file="${HOME}/.bashrc"
 RUN awsume-configure --shell=zsh --alias-file="${HOME}/.zshrc"
 USER root
+

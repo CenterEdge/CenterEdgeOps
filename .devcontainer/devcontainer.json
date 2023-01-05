@@ -1,5 +1,5 @@
 {
-  "name": "IAC.Monitors",
+  "name": "CenterEdgeOps",
   "build": {
     "dockerfile": "Dockerfile",
     "context": "..",
@@ -49,15 +49,16 @@
   //   "postCreateCommand": "brew update; brew install aws-vault",
   // See list: https://github.com/microsoft/vscode-dev-containers/tree/main/script-library/docs
   "features": {
-    "github-cli": "latest",
-    "aws-cli":    "latest",
-    // "homebrew":   {
-    //     "version": "latest"
-    // },
-    "terraform" : {
-        "version"   : "1.1.2",
-        "tflint"    : "latest",
-        "terragrunt": "none"
+    "ghcr.io/devcontainers/features/github-cli:1": {},
+    "ghcr.io/devcontainers/features/aws-cli:1":    {
+        "version": "latest"
+    },
+    "ghcr.io/devcontainers/features/terraform:1":  {
+        // "version"     : "1.3.6",
+        "version"     : "1.1.2",
+        "tflint"      : "latest",
+        "installTFsec": true,
+        "terragrunt"  : "none"
     }
   }
 }
