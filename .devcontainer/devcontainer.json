@@ -12,40 +12,8 @@
     "source=${env:HOME}/.gitignore,target=/home/vscode/.gitignore,type=bind",
     "source=${env:HOME}/.gitconfig,target=/home/vscode/.gitconfig,type=bind"
   ],
-  "settings": {
-    "terminal.integrated.profiles.linux": {
-      "zsh": { "path": "/bin/zsh" }
-    },
-    "search.useGlobalIgnoreFiles": true,
-    "search.useIgnoreFiles"      : true,
-    "search.useParentIgnoreFiles": true,
-    "terraform.languageServer.ignoreSingleFileWarning": true,
-    // TODO: This doesn't work currently, I believe the correct way to get
-    // this to function is to use multi-root workspaces withing the vscode
-    // remote container dev environment. Some info here:
-    // https://code.visualstudio.com/docs/remote/containers#_open-an-existing-workspace-in-a-container
-    // "terraform-ls.rootModules": [
-    //   "${workspaceFolder}/envs/centeredge",
-    //   "${workspaceFolder}/envs/centeredgecloudprod",
-    //   "${workspaceFolder}/envs/centeredgedev",
-    //   "${workspaceFolder}/envs/cephoenix"
-    // ],
-    "[terraform]": {
-      "editor.formatOnSave"    : true
-    },
-    "aws.profile": "env:variables"
-  },
   "remoteUser": "vscode",
   // Add the IDs of extensions you want installed when the container is created.
-  "extensions": [
-    // TODO: Re-enable the terraform extension after setting up multi-root workspaces (See above)
-    // TODO: In the meantime using the simpler 4ops extension to get syntax highlighting at least
-    // "hashicorp.terraform",
-    "4ops.terraform",
-    "run-at-scale.terraform-doc-snippets",
-    "redhat.vscode-yaml",
-    "mhutchie.git-graph"
-  ],
   //   "postCreateCommand": "brew update; brew install aws-vault",
   // See list: https://github.com/microsoft/vscode-dev-containers/tree/main/script-library/docs
   "features": {
