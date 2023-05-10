@@ -1,16 +1,8 @@
 #!/bin/bash
 
 # Description: Run from the terraform root workspace, scans for drift
-# You must have `iac.centeredgeops.IacAuditor` in your profile, or atleast a config that uses the correct role see below
+# SEE README.md in this dir
 
-# ```ini
-# [profile iac.centeredgeops.IacAuditor]
-# role_arn       = arn:aws:iam::833738481970:role/IacAuditor
-# mfa_serial     = arn:aws:iam::472171537141:mfa/ayapejian
-# source_profile = centeredge
-# ```
-
-# Exit immediately if a command exits with a non-zero status.
 set -e
 
 # Global variables
@@ -18,7 +10,12 @@ DCTL_CONFIG_DIR=${PWD}
 
 # Main function
 main() {
-  driftctl scan --config-dir ${DCTL_CONFIG_DIR} --output console:// --output json://test/driftctl_results.json --output html://test/driftctl_results.html
+  echo "**********************"
+  echo "Running as: (NOTE: If the ARN of the role doesn't contain 'IacAuditor' then you're probably using the wrong credentials)"
+  aws sts get-caller-identity
+  echo "**********************"
+  # Automated snapshots cause coverage decline over time, ideally we'd use tags to exclude these resources, for now this works.
+  driftctl scan --config-dir ${DCTL_CONFIG_DIR} --filter $'!(Type==\'aws_ebs_snapshot\' && starts_with(Id, \'snap-\'))' --output console:// --output json://test/driftctl_results.json --output html://test/driftctl_results.html
 }
 
 # Call the main function
