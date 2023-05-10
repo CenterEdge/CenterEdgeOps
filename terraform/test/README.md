@@ -2,6 +2,8 @@ Testing terraform code coverage.
 
 Each AWS account has an "IacAuditor" role which must be assumed to run the drift detection.  You'll want to follow these steps to run locally ( within the devcontainer )
 
+More information can be found on the wiki [Drift Detection](https://centeredge.atlassian.net/wiki/spaces/DEP/pages/3408101639/Drift+Detection)
+
 # Setup the IacAuditor profile in your AWS Config file (one time setup)
 
 The AWS config dir (`~/.aws`) is mounted into the devcontainer, giving you secure access to all your aws profiles, you'll need to add an entry for the IacAuditor role for this account, these values may need to be changed to match what you have set already.
