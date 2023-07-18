@@ -8,9 +8,9 @@
     }
   },
   "mounts": [
-    "source=${env:HOME}/.aws,target=/home/vscode/.aws,type=bind",
-    "source=${env:HOME}/.gitignore,target=/home/vscode/.gitignore,type=bind",
-    "source=${env:HOME}/.gitconfig,target=/home/vscode/.gitconfig,type=bind"
+    "source=${localEnv:HOME}${localEnv:USERPROFILE}/.aws,target=/home/vscode/.aws,type=bind",
+    "source=${localEnv:HOME}${localEnv:USERPROFILE}/.gitignore,target=/home/vscode/.gitignore,type=bind",
+    "source=${localEnv:HOME}${localEnv:USERPROFILE}/.gitconfig,target=/home/vscode/.gitconfig,type=bind"
   ],
   "remoteUser": "vscode",
   // Add the IDs of extensions you want installed when the container is created.
