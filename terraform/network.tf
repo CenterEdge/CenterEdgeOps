@@ -1,3 +1,36 @@
+# Training Virtuals
+
+resource "aws_vpc" "training-virtuals" {
+  cidr_block           = "172.31.0.0/16"
+  enable_dns_hostnames = true
+}
+
+resource "aws_internet_gateway" "training-virtuals" {
+  vpc_id = aws_vpc.training-virtuals.id
+}
+
+resource "aws_route_table" "training-virtuals" {
+  vpc_id = aws_vpc.training-virtuals.id
+}
+
+resource "aws_route" "training-virtuals-internet-access" {
+  route_table_id         = aws_route_table.training-virtuals.id
+  destination_cidr_block = "0.0.0.0/0"
+  gateway_id             = aws_internet_gateway.training-virtuals.id
+}
+
+resource "aws_subnet" "training-virtuals-1" {
+  vpc_id                  = aws_vpc.training-virtuals.id
+  cidr_block              = "172.31.80.0/20"
+  availability_zone       = "us-east-1f"
+  map_public_ip_on_launch = true
+}
+
+resource "aws_route_table_association" "training-virtuals" {
+  subnet_id      = aws_subnet.training-virtuals-1.id
+  route_table_id = aws_route_table.training-virtuals.id
+}
+
 # SupportOps
 
 resource "aws_vpc" "supportops" {
@@ -132,4 +165,163 @@ resource "aws_vpc_security_group_ingress_rule" "supportops-db-google-servers-3" 
   ip_protocol = "tcp"
   from_port   = 5432
   to_port     = 5432
+}
+
+resource "aws_security_group" "supportops" {
+  name        = "SupportOps"
+  description = "launch-wizard-6 created 2019-05-20T14:00:13.438-04:00"
+  vpc_id      = aws_vpc.supportops.id
+  tags        = {}
+}
+
+resource "aws_vpc_security_group_egress_rule" "supportops-default" {
+  security_group_id = aws_security_group.supportops.id
+
+  cidr_ipv4   = "0.0.0.0/0"
+  ip_protocol = "-1"
+}
+
+resource "aws_vpc_security_group_ingress_rule" "supportops-centeredge-access" {
+  description       = "CEAlternate"
+  security_group_id = aws_security_group.supportops.id
+
+  cidr_ipv4   = "63.234.202.58/32"
+  ip_protocol = "tcp"
+  from_port   = 3389
+  to_port     = 3389
+}
+
+resource "aws_vpc_security_group_ingress_rule" "supportops-public-http-ipv4" {
+  security_group_id = aws_security_group.supportops.id
+
+  cidr_ipv4   = "0.0.0.0/0"
+  ip_protocol = "tcp"
+  from_port   = 80
+  to_port     = 80
+}
+
+resource "aws_vpc_security_group_ingress_rule" "supportops-public-https-ipv4" {
+  security_group_id = aws_security_group.supportops.id
+
+  cidr_ipv4   = "0.0.0.0/0"
+  ip_protocol = "tcp"
+  from_port   = 443
+  to_port     = 443
+}
+
+resource "aws_vpc_security_group_ingress_rule" "supportops-public-http-ipv6" {
+  security_group_id = aws_security_group.supportops.id
+
+  cidr_ipv6   = "::/0"
+  ip_protocol = "tcp"
+  from_port   = 80
+  to_port     = 80
+}
+
+resource "aws_vpc_security_group_ingress_rule" "supportops-public-slack-ipv4" {
+  description       = "Slack"
+  security_group_id = aws_security_group.supportops.id
+
+  cidr_ipv4   = "0.0.0.0/0"
+  ip_protocol = "tcp"
+  from_port   = 7117
+  to_port     = 7117
+}
+
+resource "aws_vpc_security_group_ingress_rule" "supportops-public-slack-ipv6" {
+  description       = "Slack"
+  security_group_id = aws_security_group.supportops.id
+
+  cidr_ipv6   = "::/0"
+  ip_protocol = "tcp"
+  from_port   = 7117
+  to_port     = 7117
+}
+
+resource "aws_vpc_security_group_ingress_rule" "supportops-public-api-ipv4" {
+  description       = "Api"
+  security_group_id = aws_security_group.supportops.id
+
+  cidr_ipv4   = "0.0.0.0/0"
+  ip_protocol = "tcp"
+  from_port   = 5050
+  to_port     = 5050
+}
+
+resource "aws_vpc_security_group_ingress_rule" "supportops-public-api-ipv4-health-check" {
+  description       = "Api Health"
+  security_group_id = aws_security_group.supportops.id
+
+  cidr_ipv4   = "0.0.0.0/0"
+  ip_protocol = "tcp"
+  from_port   = 5051
+  to_port     = 5051
+}
+
+# Training Virtuals
+
+resource "aws_security_group" "training-virtuals" {
+  name        = "CustomerServer"
+  description = "All access necessary for a customer server"
+  vpc_id      = aws_vpc.training-virtuals.id
+  tags        = {}
+}
+
+resource "aws_vpc_security_group_egress_rule" "training-virtuals-default" {
+  security_group_id = aws_security_group.training-virtuals.id
+
+  cidr_ipv4   = "0.0.0.0/0"
+  ip_protocol = "-1"
+}
+
+resource "aws_vpc_security_group_ingress_rule" "training-virtuals-http" {
+  security_group_id = aws_security_group.training-virtuals.id
+
+  cidr_ipv4   = "0.0.0.0/0"
+  ip_protocol = "tcp"
+  from_port   = 80
+  to_port     = 80
+}
+
+resource "aws_vpc_security_group_ingress_rule" "training-virtuals-https" {
+  security_group_id = aws_security_group.training-virtuals.id
+
+  cidr_ipv4   = "0.0.0.0/0"
+  ip_protocol = "tcp"
+  from_port   = 443
+  to_port     = 443
+}
+
+resource "aws_vpc_security_group_ingress_rule" "training-virtuals-smtp" {
+  security_group_id = aws_security_group.training-virtuals.id
+
+  cidr_ipv4   = "0.0.0.0/0"
+  ip_protocol = "tcp"
+  from_port   = 587
+  to_port     = 587
+}
+
+resource "aws_vpc_security_group_ingress_rule" "training-virtuals-rdp" {
+  security_group_id = aws_security_group.training-virtuals.id
+
+  cidr_ipv4   = "0.0.0.0/0"
+  ip_protocol = "tcp"
+  from_port   = 3389
+  to_port     = 3389
+}
+
+resource "aws_vpc_security_group_ingress_rule" "training-virtuals-vnc" {
+  security_group_id = aws_security_group.training-virtuals.id
+
+  cidr_ipv4   = "0.0.0.0/0"
+  ip_protocol = "tcp"
+  from_port   = 5900
+  to_port     = 5900
+}
+
+resource "aws_vpc_security_group_ingress_rule" "training-virtuals-all-icmp" {
+  security_group_id = aws_security_group.training-virtuals.id
+
+  cidr_ipv4   = "0.0.0.0/0"
+  ip_protocol = "icmp"
 }

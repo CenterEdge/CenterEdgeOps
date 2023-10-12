@@ -1,0 +1,11 @@
+<powershell>
+$saPass = '';
+$posPass = '';
+$winPass = '';
+$tvPass = '';
+
+if ($saPass -ne ([String]::Empty) -and $posPass -ne ([String]::Empty) -and $winPass -ne ([String]::Empty)) {
+$SiteName = 'CenterEdge Software';
+C:\Users\Administrator\Documents\WindowsPowerShell\Install-VirtualServer.ps1 -saPass $saPass -posPass $posPass -winPass $winPass -tvPass $tvPass -SiteName $SiteName
+}
+</powershell>
