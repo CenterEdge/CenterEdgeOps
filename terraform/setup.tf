@@ -1,6 +1,6 @@
 # State
 terraform {
-  required_version = "~> 1.3.6"
+  required_version = "~> 1.6.1"
 
   required_providers {
     aws = {
@@ -30,9 +30,11 @@ data "terraform_remote_state" "opsroot" {
     region         = "us-east-1"
     bucket         = "centeredgeterraform"
     key            = "OpsRoot/terraform.tfstate"
-    role_arn       = "arn:aws:iam::243399810067:role/TerraformDeployment"
     encrypt        = true
     dynamodb_table = "TerraformDeployment"
+    assume_role = {
+      role_arn = "arn:aws:iam::243399810067:role/TerraformDeployment"
+    }
   }
 }
 
