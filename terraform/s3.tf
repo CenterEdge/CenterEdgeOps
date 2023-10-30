@@ -99,3 +99,8 @@ resource "aws_s3_bucket" "centeredgeops" {
   bucket = "centeredgeops"
   tags   = {}
 }
+
+resource "aws_s3_bucket" "centeredge-techfiles" {
+  bucket = "centeredge-techfiles"
+  tags   = {}
+}
