@@ -32,3 +32,9 @@ data "aws_iam_policy_document" "adv-emails-access-policy" {
     }
   }
 }
+
+resource "aws_sns_topic_subscription" "email-handler-invoke" {
+  topic_arn = aws_sns_topic.adv-email-received.arn
+  protocol  = "lambda"
+  endpoint  = aws_lambda_function.email-handler.arn
+}

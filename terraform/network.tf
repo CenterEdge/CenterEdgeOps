@@ -121,7 +121,7 @@ resource "aws_vpc_security_group_ingress_rule" "supportops-db-centeredge" {
   description       = "CE"
   security_group_id = aws_security_group.supportops-db.id
 
-  cidr_ipv4   = "63.234.202.58/32"
+  cidr_ipv4   = "68.191.23.70/32"
   ip_protocol = "tcp"
   from_port   = 5432
   to_port     = 5432
@@ -182,10 +182,10 @@ resource "aws_vpc_security_group_egress_rule" "supportops-default" {
 }
 
 resource "aws_vpc_security_group_ingress_rule" "supportops-centeredge-access" {
-  description       = "CEAlternate"
+  description       = "CE"
   security_group_id = aws_security_group.supportops.id
 
-  cidr_ipv4   = "63.234.202.58/32"
+  cidr_ipv4   = "68.191.23.70/32"
   ip_protocol = "tcp"
   from_port   = 3389
   to_port     = 3389
