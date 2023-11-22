@@ -1,0 +1,66 @@
+[
+  {
+      "name": "jarvis",
+      "image": "833738481970.dkr.ecr.us-east-1.amazonaws.com/jarvis:5ddd0f379679f151362f87556f025c8da379d30d",
+      "cpu": 0,
+      "portMappings": [
+          {
+              "name": "jarvis-8080-tcp",
+              "containerPort": 8080,
+              "hostPort": 8080,
+              "protocol": "tcp",
+              "appProtocol": "http"
+          },
+          {
+              "name": "jarvis-7118-tcp",
+              "containerPort": 7118,
+              "hostPort": 7118,
+              "protocol": "tcp",
+              "appProtocol": "http"
+          }
+      ],
+      "essential": true,
+      "environment": [],
+      "mountPoints": [],
+      "volumesFrom": [],
+      "secrets": [
+          {
+              "name": "AZURE_OPENAPI_KEY",
+              "valueFrom": "arn:aws:ssm:us-east-1:833738481970:parameter/azure/openai/key"
+          },
+          {
+              "name": "AZURE_SEARCH_ADMIN_KEY",
+              "valueFrom": "arn:aws:ssm:us-east-1:833738481970:parameter/azure/search/admin"
+          },
+          {
+              "name": "POSTGRES_PASSWORD",
+              "valueFrom": "arn:aws:ssm:us-east-1:833738481970:parameter/postgres/data/password"
+          },
+          {
+              "name": "POSTGRES_USER",
+              "valueFrom": "arn:aws:ssm:us-east-1:833738481970:parameter/postgres/data/user"
+          },
+          {
+              "name": "SLACK_BOT_TOKEN",
+              "valueFrom": "arn:aws:ssm:us-east-1:833738481970:parameter/slack/jarvis/bot_token"
+          },
+          {
+              "name": "SLACK_SIGNING_SECRET",
+              "valueFrom": "arn:aws:ssm:us-east-1:833738481970:parameter/slack/jarvis/signing_secret"
+          },
+          {
+              "name": "ZENDESK_API_AUTH",
+              "valueFrom": "arn:aws:ssm:us-east-1:833738481970:parameter/zendesk/api_token"
+          }
+      ],
+      "logConfiguration": {
+          "logDriver": "awslogs",
+          "options": {
+              "awslogs-create-group": "true",
+              "awslogs-group": "/ecs/jarvis",
+              "awslogs-region": "us-east-1",
+              "awslogs-stream-prefix": "ecs"
+          }
+      }
+  }
+]

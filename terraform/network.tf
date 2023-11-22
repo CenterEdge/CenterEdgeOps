@@ -325,3 +325,57 @@ resource "aws_vpc_security_group_ingress_rule" "training-virtuals-all-icmp" {
   cidr_ipv4   = "0.0.0.0/0"
   ip_protocol = "icmp"
 }
+
+resource "aws_security_group" "jarvis" {
+  name        = "Jarvis"
+  description = "Base config for @jarvis."
+  vpc_id      = aws_vpc.supportops.id
+  tags        = local.default_tags
+}
+
+resource "aws_vpc_security_group_egress_rule" "jarvis-default" {
+  security_group_id = aws_security_group.jarvis.id
+
+  cidr_ipv4   = "0.0.0.0/0"
+  ip_protocol = "-1"
+}
+
+resource "aws_vpc_security_group_ingress_rule" "jarvis-http-ipv4" {
+  description       = "traffic"
+  security_group_id = aws_security_group.jarvis.id
+
+  cidr_ipv4   = "0.0.0.0/0"
+  ip_protocol = "tcp"
+  from_port   = 8080
+  to_port     = 8080
+}
+
+resource "aws_vpc_security_group_ingress_rule" "jarvis-http-ipv6" {
+  description       = "traffic"
+  security_group_id = aws_security_group.jarvis.id
+
+  cidr_ipv6   = "::/0"
+  ip_protocol = "tcp"
+  from_port   = 8080
+  to_port     = 8080
+}
+
+resource "aws_vpc_security_group_ingress_rule" "jarvis-health-ipv4" {
+  description       = "health"
+  security_group_id = aws_security_group.jarvis.id
+
+  cidr_ipv4   = "0.0.0.0/0"
+  ip_protocol = "tcp"
+  from_port   = 7118
+  to_port     = 7118
+}
+
+resource "aws_vpc_security_group_ingress_rule" "jarvis-health-ipv6" {
+  description       = "health"
+  security_group_id = aws_security_group.jarvis.id
+
+  cidr_ipv6   = "::/0"
+  ip_protocol = "tcp"
+  from_port   = 7118
+  to_port     = 7118
+}
