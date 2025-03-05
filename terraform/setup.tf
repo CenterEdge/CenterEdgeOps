@@ -1,6 +1,6 @@
 # State
 terraform {
-  required_version = "~> 1.6.1"
+  required_version = "~> 1.10.5"
 
   required_providers {
     aws = {
@@ -14,10 +14,12 @@ terraform {
   }
 
   backend "s3" {
-    region         = "us-east-1"
-    bucket         = "centeredgeterraform"
-    key            = "Ops/terraform.tfstate"
-    role_arn       = "arn:aws:iam::243399810067:role/TerraformDeployment"
+    region = "us-east-1"
+    bucket = "centeredgeterraform"
+    key    = "Ops/terraform.tfstate"
+    assume_role = {
+      role_arn = "arn:aws:iam::243399810067:role/TerraformDeployment"
+    }
     encrypt        = true
     dynamodb_table = "TerraformDeployment"
   }
