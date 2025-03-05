@@ -414,8 +414,6 @@ data "aws_iam_policy_document" "jarvis-manage-virtuals" {
       "ec2:TerminateInstances",
       "ec2:DeleteTags",
       "ec2:StartInstances",
-      "ec2:CreateTags",
-      "ec2:RunInstances",
       "ec2:ModifyInstanceAttribute",
       "ec2:StopInstances"
     ]
@@ -428,11 +426,17 @@ data "aws_iam_policy_document" "jarvis-manage-virtuals" {
   }
 
   statement {
-    sid       = "DescribeAllInstances"
-    actions   = ["ec2:DescribeInstances"]
+    sid = "DescribeAllInstances"
+    actions = [
+      "ec2:CreateTags",
+      "ec2:RunInstances",
+      "ec2:DescribeInstances"
+    ]
     resources = ["*"]
   }
 }
+
+
 
 resource "aws_iam_role" "ecs-execution-role" {
   name               = "ecsTaskExecutionRole"

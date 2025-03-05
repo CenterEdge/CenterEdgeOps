@@ -12,7 +12,7 @@ resource "aws_db_instance" "supportops-database" {
   backup_retention_period         = 3
   backup_window                   = "06:00-08:00"
   maintenance_window              = "Sun:00:00-Sun:04:00"
-  parameter_group_name            = aws_db_parameter_group.supportops-db.name
+  parameter_group_name            = aws_db_parameter_group.supportops-db-default.name
   kms_key_id                      = data.aws_kms_key.rds-default.arn
   performance_insights_kms_key_id = data.aws_kms_key.rds-default.arn
 
@@ -47,6 +47,13 @@ resource "aws_db_option_group" "supportops-db" {
   engine_name              = "postgres"
   major_engine_version     = "11"
   tags                     = {}
+}
+
+resource "aws_db_parameter_group" "supportops-db-default" {
+  name        = "default-postgres15"
+  description = "Adds Default param group"
+  family      = "postgres15"
+  tags        = {}
 }
 
 resource "aws_db_parameter_group" "supportops-db" {

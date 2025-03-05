@@ -81,4 +81,9 @@ resource "aws_ecs_service" "jarvis" {
       aws_subnet.supportops-server-2.id
     ]
   }
+
+  # Optional: Allow external changes without Terraform plan difference
+  lifecycle {
+    ignore_changes = [task_definition]
+  }
 }
