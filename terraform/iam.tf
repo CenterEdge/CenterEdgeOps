@@ -215,14 +215,27 @@ resource "aws_iam_role" "email-handler" {
   path               = "/service-role/"
   assume_role_policy = data.aws_iam_policy_document.email-handler-assumepolicy.json
 
-  managed_policy_arns = [
-    "arn:aws:iam::833738481970:policy/service-role/AWSLambdaBasicExecutionRole-6439f5ce-0bf1-459b-8af8-e65491517140",
-    "arn:aws:iam::833738481970:policy/service-role/AWSLambdaSESExecutionRole-51dde292-58f0-42e0-9f9f-ee69f08cadd5",
-    "arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess",
-    "arn:aws:iam::aws:policy/AmazonS3FullAccess"
-  ]
-
   tags = {}
+}
+
+resource "aws_iam_role_policy_attachment" "email_handler_basic" {
+  role       = aws_iam_role.email-handler.name
+  policy_arn = "arn:aws:iam::833738481970:policy/service-role/AWSLambdaBasicExecutionRole-6439f5ce-0bf1-459b-8af8-e65491517140"
+}
+
+resource "aws_iam_role_policy_attachment" "email_handler_ses" {
+  role       = aws_iam_role.email-handler.name
+  policy_arn = "arn:aws:iam::833738481970:policy/service-role/AWSLambdaSESExecutionRole-51dde292-58f0-42e0-9f9f-ee69f08cadd5"
+}
+
+resource "aws_iam_role_policy_attachment" "email_handler_dynamodb" {
+  role       = aws_iam_role.email-handler.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess"
+}
+
+resource "aws_iam_role_policy_attachment" "email_handler_s3" {
+  role       = aws_iam_role.email-handler.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonS3FullAccess"
 }
 
 data "aws_iam_policy_document" "email-handler-assumepolicy" {

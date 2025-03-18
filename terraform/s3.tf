@@ -38,7 +38,9 @@ resource "aws_s3_bucket_lifecycle_configuration" "centeredge-ops-emails" {
   bucket = aws_s3_bucket.centeredge-ops-emails.id
   rule {
     id = "ExpireObjects"
-    filter {}
+    filter {
+      prefix = "..."
+    }
     status = "Enabled"
     expiration {
       days = 365
