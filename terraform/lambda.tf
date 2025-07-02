@@ -5,7 +5,7 @@ resource "aws_lambda_function" "email-handler" {
   s3_bucket   = "centeredge-techfiles"
   s3_key      = "lambda/emailHandler.zip"
   handler     = "index.handler"
-  runtime     = "nodejs18.x"
+  runtime     = "nodejs20.x"
   memory_size = 128
   timeout     = 3
   ephemeral_storage {
