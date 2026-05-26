@@ -160,6 +160,7 @@ resource "aws_lb_target_group" "jarvis-2" {
   protocol                      = "HTTP"
   protocol_version              = "HTTP1"
   connection_termination        = false
+  deregistration_delay          = 120
   ip_address_type               = "ipv4"
   load_balancing_algorithm_type = "round_robin"
   proxy_protocol_v2             = false
@@ -168,7 +169,7 @@ resource "aws_lb_target_group" "jarvis-2" {
 
   health_check {
     enabled             = true
-    healthy_threshold   = 5
+    healthy_threshold   = 2
     interval            = 30
     matcher             = "200"
     path                = "/healthcheck"
